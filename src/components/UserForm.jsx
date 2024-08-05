@@ -24,7 +24,7 @@ export default function UserForm() {
           onChange={(e) => setInputName(e.target.value)}
         />
       </label>
-      <button type="submit">Submit</button>
+      <button type="submit">Start Quiz</button>
     </form>
   );
 }

@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 export default function Header() {
     return (
         <header>
-            <h1 id="title">Which Element Are You?</h1>
-            <h4 id="subtitle">(based on completely random things)</h4>
-            <Link to="/">Home</Link>
-            <Link to="/quiz">Quiz</Link>
+            <h1>Which Disney Character Are You?</h1>
+            <p>(based on completely random things)</p>
+            <nav>
+                <Link to="/" >Home</Link>
+                <Link to="/quiz" >Quiz</Link>
+            </nav>
         </header>
     )
 }

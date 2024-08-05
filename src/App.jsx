@@ -1,112 +1,116 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import UserForm from './components/UserForm';
-import Results from './components/Results';
-import Question from './components/Question';
 import Header from './components/Header';
+import Question from './components/Question';
+import Results from './components/Results';
+import UserForm from './components/UserForm';
+import { UserProvider } from './components/UserContext';
+import './index.css';
 
-export default function App() {
+function App() {
   const questions = [
     {
       question: "What's your favorite color?",
-      options: ["Red 🔴", "Blue 🔵", "Green 🟢", "Yellow 🟡"]
+      options: ["Red 🔴", "Blue 🔵", "Green 🟢", "Yellow 🟡"],
     },
     {
-      question: "What's your favorite animal?",
-      options: ["Dog", "Cat", "Bird", "Fish"]
+      question: "What's your favorite season?",
+      options: ["Spring 🌸", "Summer 🌞", "Fall 🍂", "Winter ❄️"],
     },
     {
-      question: "What's your favorite food?",
-      options: ["Pizza", "Pasta", "Burger", "Salad"]
-    },
-    {
-      question: "What's your favorite movie genre?",
-      options: ["Action", "Comedy", "Horror", "Romance"]
+      question: "What's your favorite element?",
+      options: ["Fire 🔥", "Water 💧", "Earth 🌍", "Air 💨"],
     }
   ];
 
-  const keywords = {
-    Fire: "fire",
-    Water: "water",
-    Earth: "earth",
-    Air: "air",
-  };
+	const keywords = {
+		Flounder: "flounder",
+		Pascal: "pascal",
+		Olaf: "olaf",
+		Abu: "abu",
+	};
 
-  const elements = {
-    "Red 🔴": "fire",
-    "Blue 🔵": "water",
-    "Green 🟢": "earth",
-    "Yellow 🟡": "air",
-    "Dog": "fire",
-    "Cat": "water",
-    "Bird": "air",
-    "Fish": "earth",
-    "Pizza": "fire",
-    "Pasta": "water",
-    "Burger": "earth",
-    "Salad": "air",
-    "Action": "fire",
-    "Comedy": "water",
-    "Horror": "earth",
-    "Romance": "air",
+	const elements = {
+		"Red 🔴": "abu",
+    "Blue 🔵": "olaf",
+    "Green 🟢": "pascal",
+    "Yellow 🟡": "flounder",
+    "Spring 🌸": "pascal",
+    "Summer 🌞": "olaf",
+    "Fall 🍂": "abu",
+    "Winter ❄️": "flounder",
+    "Fire 🔥": "abu",
+    "Water 💧": "olaf",
+    "Earth 🌍": "pascal",
+    "Air 💨": "flounder",
+	};
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+	const [answers, setAnswers] = useState([]);
+	const [userName, setUserName] = useState('');
+	const [element, setElement] = useState('');
+	const [artwork, setArtwork] = useState(null);
+
+	function handleAnswer(answer) {
+		setAnswers([...answers, answer]);
+		setCurrentQuestionIndex(currentQuestionIndex + 1);
+	}
+
+	function handleUserFormSubmit(name) {
+		setUserName(name);
+	}
+
+	function determineElement(answers) {
+		const counts = {};
+		answers.forEach((answer) => {
+			const element = elements[answer];
+			counts[element] = (counts[element] || 0) + 1;
+		});
+
+		return Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+	}
+
+  function fetchArtwork() {
+    const randomId = Math.floor(Math.random() * 7438) + 1;
+    fetch(`https://api.disneyapi.dev/character/${randomId}`)
+      .then((response) => response.json())
+      .then((data) => setArtwork(data))
+      .catch((error) => console.error(error));
   }
 
-  let [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  let [answers, setAnswers] = useState([]);
-  let [userName, setUserName] = useState("");
-  let [element, setElement] = useState("");
-  let [artwork, setArtwork] = useState(null);
+	useEffect(() => {
+		if (currentQuestionIndex === questions.length) {
+      const selectedElement = determineElement(answers);
+      setElement(selectedElement);
+      fetchArtwork();
+		}
+	}, [currentQuestionIndex]);
 
-  function handleAnswer(answer) {
-    setAnswers([...answers, answer]);
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
-  }
-
-  function handleUserFormSubmit(name) {
-    setUserName(name);
-  }
-
-  function determineElement(answers) {
-    const counts = {};
-    answers.forEach(function(answer) {
-      const element = elements[answer];
-      counts[element] = (counts[element] || 0) + 1;
-    });
-    return Object.keys(counts).reduce(function(a, b) {
-      return counts[a] > counts[b] ? a : b
-    });
-  }
-
-  function fetchImage() { 
-  }
-
-  useEffect(
-    function () {
-      if (currentQuestionIndex === questions.length) {
-        const selectedElement = determineElement(answers);
-        setElement(selectedElement);
-        fetchImage(keywords[selectedElement]);
-      }
-    },
-    [currentQuestionIndex]
-  );
-
-  return (
-    <UserForm.Provider value={{ name: userName, setName: setUserName }}>
+	return (
+		<UserProvider value={{ name: userName, setName: setUserName }}>
       <Header />
       <Routes>
-        <Route path="/" element={<UserForm onSubmit={handleUserFormSubmit} />} />
-        <Route 
+        <Route
+          path="/"
+          element={<UserForm onSubmit={handleUserFormSubmit} />}
+        />
+        <Route
           path="/quiz"
           element={
             currentQuestionIndex < questions.length ? (
-              <Question question={questions[currentQuestionIndex].question} options={questions[currentQuestionIndex].options} onAnswer={handleAnswer} />
+              <Question
+                question={questions[currentQuestionIndex].question}
+                options={questions[currentQuestionIndex].options}
+                onAnswer={handleAnswer}
+              />
             ) : (
               <Results element={element} artwork={artwork} />
             )
-          } 
-          />
+          }
+        />
       </Routes>
-    </UserForm.Provider>
+		</UserProvider>
   );
 }
+
+export default App;
